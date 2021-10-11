@@ -15,7 +15,7 @@ class TagViewSet(viewsets.GenericViewSet,
     serializer_class = serializers.TagSerializer
 
     def get_queryset(self):
-        """Return objects for the current authenticated user only"""
+        """Returns objects for the current authenticated user only"""
         return self.queryset.filter(user=self.request.user).order_by('-name')
 
     def perform_create(self, serializer):
@@ -29,3 +29,7 @@ class IngredientViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     permission_classes = (IsAuthenticated,)
     queryset = Ingredient.objects.all()
     serializer_class = serializers.IngredientSerializer
+
+    def get_queryset(self):
+        """Returns objects for the current authenticated user only"""
+        return self.queryset.filter(user=self.request.user).order_by('-name')
