@@ -49,10 +49,28 @@ class RecipeViewSet(viewsets.ModelViewSet):
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
 
+    def _params_to_ints(self, qs):
+        """Convert a list of string IDs to a list of integers"""
+
+        return [int(str_id) for str_id in qs.split(',')]
+
     def get_queryset(self):
         """Returns recipes for the current authenticated user only"""
 
-        return self.queryset.filter(user=self.request.user)
+        queryset = self.queryset
+
+        tags = self.request.query_params.get('tags')
+        ingredients = self.request.query_params.get('ingredients')
+
+        if tags:
+            tags_ids = self._params_to_ints(tags)
+            queryset = queryset.filter(tags__id__in=tags_ids)
+
+        if ingredients:
+            ingredients_ids = self._params_to_ints(ingredients)
+            queryset = queryset.filter(ingredients__id__in=ingredients_ids)
+
+        return queryset.filter(user=self.request.user)
 
     def get_serializer_class(self):
         """Returns appropriate serializer class"""
@@ -73,6 +91,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(methods=['POST'], detail=True, url_path='upload-image')
     def upload_image(self, request, pk=None):
         """Upload an image to a recipe"""
+
         recipe = self.get_object()
         serializer = self.get_serializer(recipe, data=request.data)
 
